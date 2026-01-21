@@ -13,10 +13,41 @@ echo "========================================================"
 echo " 開始安裝與建置 Llama 3.1 CLI (Blackwell NVFP4/FP8)"
 echo "========================================================"
 
+# 檢查 NVIDIA 驅動 (WSL2 需在 Windows 端安裝)
+if ! command -v nvidia-smi &> /dev/null; then
+    echo "嚴重錯誤：未檢測到 nvidia-smi。"
+    echo "如果您正在使用 WSL2，請確保已在 Windows 主機上安裝最新的 NVIDIA 驅動程式。"
+    echo "請訪問：https://www.nvidia.com/Download/index.aspx"
+    exit 1
+fi
+
+# 更新 apt 並安裝基礎系統依賴
+echo "正在檢查並安裝基礎系統依賴 (需要 sudo 權限)..."
+sudo apt-get update
+sudo apt-get install -y build-essential python3-pip git wget libopenmpi-dev software-properties-common
+
 # 檢查 git-lfs
 if ! command -v git-lfs &> /dev/null; then
-    echo "錯誤：未安裝 git-lfs。請先安裝 git-lfs (例如: sudo apt-get install git-lfs)。"
-    exit 1
+    echo "安裝 git-lfs..."
+    sudo apt-get install -y git-lfs
+    git lfs install
+fi
+
+# 檢查 CUDA Toolkit (nvcc)
+if ! command -v nvcc &> /dev/null; then
+    echo "警告：未檢測到 nvcc (CUDA Compiler)。"
+    echo "正在嘗試安裝 NVIDIA CUDA Toolkit..."
+    # 嘗試安裝標準 CUDA Toolkit (通常 WSL2 Ubuntu 儲存庫會有)
+    # 若需特定 13.0 版本可能需手動添加 repo，這裡優先使用 apt 預設或提示使用者
+    if sudo apt-get install -y nvidia-cuda-toolkit; then
+        echo "CUDA Toolkit 安裝完成。"
+    else
+        echo "CUDA Toolkit 自動安裝失敗。請手動安裝 CUDA Toolkit 12.8+ 或 13.0。"
+        echo "參考: https://developer.nvidia.com/cuda-downloads"
+        # 這裡不強制退出，因為有時 nvcc 不在 PATH 但環境可用
+    fi
+else
+    echo "檢測到 CUDA Toolkit: $(nvcc --version | grep release)"
 fi
 
 # 檢查 conda (或確認 python 環境)
@@ -46,12 +77,7 @@ else
     echo "檢測到 conda 環境。"
 fi
 
-# 檢查並安裝必要的系統依賴 (OpenMPI)
-if ! command -v mpicc &> /dev/null; then
-    echo "警告：未檢測到 mpicc (OpenMPI)。TensorRT-LLM 需要 MPI 支援。"
-    echo "請執行：sudo apt-get -y install libopenmpi-dev"
-    # 在非互動環境中，我們僅提示而不強制中止，因為某些環境可能已透過其他方式配置
-fi
+# (OpenMPI 檢查已整合至上方基礎依賴安裝步驟)
 
 # 確保 transformers 版本足夠新以支援 Llama 3.1 模板
 echo "正在檢查並升級 transformers..."

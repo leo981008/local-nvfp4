@@ -18,11 +18,11 @@
     *   GPU: NVIDIA RTX 5060 Ti (16GB VRAM) 或更高規格
     *   RAM: 建議 64GB 系統記憶體
 *   **軟體**:
-    *   Linux 環境
-    *   NVIDIA Drivers & CUDA Toolkit
-    *   **TensorRT-LLM** (必須預先安裝)
-    *   `git-lfs`
-    *   `conda` (建議)
+    *   Linux 環境 (Ubuntu 22.04+ / WSL2)
+    *   NVIDIA Drivers (WSL2 使用者請在 Windows 端安裝)
+    *   CUDA Toolkit 13.0+
+    *   **TensorRT-LLM** (腳本可嘗試自動安裝)
+    *   `git-lfs`, `conda` (腳本可自動安裝)
 
 ## 安裝指南
 
@@ -89,6 +89,9 @@ max_context_len: 131072
     ```bash
     sudo apt-get -y install libopenmpi-dev
     ```
+*   **WSL2 特別說明**:
+    *   **驅動程式**: 請勿在 WSL2 內安裝 NVIDIA 驅動 (`nvidia-driver-xxx`)，這會破壞 GPU 直通。請確保 Windows 主機已安裝最新驅動。
+    *   **CUDA Toolkit**: 雖然驅動在 Windows，但 WSL2 內部仍需安裝 CUDA Toolkit (nvcc) 以進行編譯。
 *   **版本相容性**: 本專案針對 CUDA 13.0 優化。若您的環境不同，可能需要調整 `install.sh` 中的 PyTorch 安裝指令。
 
 ---
