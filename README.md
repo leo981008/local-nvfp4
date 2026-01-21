@@ -83,5 +83,13 @@ max_context_len: 131072
 *   [TensorRT-LLM 官方文件](https://nvidia.github.io/TensorRT-LLM/index.html): 詳細使用手冊與 API 說明。
 *   [Linux 安裝指南](https://nvidia.github.io/TensorRT-LLM/installation/linux.html#linux): 環境建置與依賴安裝說明。
 
+## 故障排除
+
+*   **MPI 錯誤**: 若遇到 MPI 相關錯誤，請確保已安裝 OpenMPI 開發庫：
+    ```bash
+    sudo apt-get -y install libopenmpi-dev
+    ```
+*   **版本相容性**: 本專案針對 CUDA 13.0 優化。若您的環境不同，可能需要調整 `install.sh` 中的 PyTorch 安裝指令。
+
 ---
 *由 Llama 3.1 驅動，針對 RTX 50 系列硬體進行最佳化。*

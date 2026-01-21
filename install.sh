@@ -46,9 +46,30 @@ else
     echo "檢測到 conda 環境。"
 fi
 
+# 檢查並安裝必要的系統依賴 (OpenMPI)
+if ! command -v mpicc &> /dev/null; then
+    echo "警告：未檢測到 mpicc (OpenMPI)。TensorRT-LLM 需要 MPI 支援。"
+    echo "請執行：sudo apt-get -y install libopenmpi-dev"
+    # 在非互動環境中，我們僅提示而不強制中止，因為某些環境可能已透過其他方式配置
+fi
+
 # 確保 transformers 版本足夠新以支援 Llama 3.1 模板
 echo "正在檢查並升級 transformers..."
 pip install --upgrade transformers
+
+# 檢查並安裝 TensorRT-LLM 及相關依賴 (根據 Blackwell/CUDA 13.0 官方文件)
+if ! python3 -c "import tensorrt_llm" &> /dev/null; then
+    echo "未檢測到 TensorRT-LLM，正在嘗試自動安裝..."
+    echo "注意：這將安裝 CUDA 13.0 相容的 PyTorch (2.9.0) 與 TensorRT-LLM。"
+
+    # 安裝 PyTorch (CUDA 13.0)
+    pip install torch==2.9.0 torchvision --index-url https://download.pytorch.org/whl/cu130 || echo "警告：PyTorch 2.9.0 安裝失敗，可能是預覽版本尚未公開。將嘗試繼續..."
+
+    # 安裝 TensorRT-LLM
+    # 先升級 pip
+    pip install --upgrade pip setuptools
+    pip install tensorrt_llm
+fi
 
 # 鎖定 Python 執行檔路徑
 PYTHON_CMD=$(which python3)
