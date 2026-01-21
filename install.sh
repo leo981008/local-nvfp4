@@ -21,10 +21,39 @@ fi
 
 # 檢查 conda (或確認 python 環境)
 if ! command -v conda &> /dev/null; then
-    echo "警告：未檢測到 conda。請確保您在正確的 Python 虛擬環境中，並且已安裝 TensorRT-LLM。"
+    echo "警告：未檢測到 conda。正在自動安裝 Miniconda..."
+
+    # 定義 Miniconda 安裝路徑
+    MINICONDA_DIR="$HOME/miniconda"
+
+    if [ -d "$MINICONDA_DIR" ]; then
+        echo "檢測到 $MINICONDA_DIR 已存在，將使用此路徑。"
+    else
+        # 下載 Miniconda
+        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+        # 安裝
+        bash miniconda.sh -b -p "$MINICONDA_DIR"
+        rm miniconda.sh
+        echo "Miniconda 安裝完成。"
+    fi
+
+    # 將 conda 加入環境變數
+    export PATH="$MINICONDA_DIR/bin:$PATH"
+
+    # 初始化 conda (即使在 script 中可能只影響當前 session)
+    source "$MINICONDA_DIR/etc/profile.d/conda.sh"
 else
     echo "檢測到 conda 環境。"
 fi
+
+# 鎖定 Python 執行檔路徑
+PYTHON_CMD=$(which python3)
+
+echo "--------------------------------------------------------"
+echo "確認 Python 環境"
+echo "--------------------------------------------------------"
+echo "正在使用的 Python 執行檔路徑: $PYTHON_CMD"
+$PYTHON_CMD --version
 
 # 步驟 1: 下載模型
 echo "--------------------------------------------------------"
@@ -44,32 +73,24 @@ echo "--------------------------------------------------------"
 echo "步驟 2: 轉換 Checkpoint 至 NVFP4..."
 echo "--------------------------------------------------------"
 
-# 尋找 convert_checkpoint.py
-# 假設使用者在 TensorRT-LLM 環境中，嘗試尋找常見路徑或是依賴 PATH
-# 為了穩定性，這裡假設腳本在 PATH 中或需要使用者指定
-# 但根據題目要求，我們直接使用 convert_checkpoint.py 並假設環境已配置好 (如在 TRT-LLM docker 中)
-
 if [ -d "$CHECKPOINT_DIR" ]; then
     echo "目錄 $CHECKPOINT_DIR 已存在，清除並重新轉換..."
     rm -rf "$CHECKPOINT_DIR"
 fi
 
-# 檢查 convert_checkpoint.py 是否可直接執行 (透過 python -m tensorrt_llm.commands.convert_checkpoint 或類似)
-# 較新版 TRT-LLM 推薦使用: python -m tensorrt_llm.commands.convert_checkpoint
-# 或是 examples/llama/convert_checkpoint.py
-
+# 尋找 convert_checkpoint.py
 # 嘗試使用 python 模組執行 (新版)
-if python3 -c "import tensorrt_llm.commands.convert_checkpoint" &> /dev/null; then
-    CMD="python3 -m tensorrt_llm.commands.convert_checkpoint"
+if $PYTHON_CMD -c "import tensorrt_llm.commands.convert_checkpoint" &> /dev/null; then
+    CMD="$PYTHON_CMD -m tensorrt_llm.commands.convert_checkpoint"
 elif [ -f "convert_checkpoint.py" ]; then
-    CMD="python3 convert_checkpoint.py"
+    CMD="$PYTHON_CMD convert_checkpoint.py"
 else
     echo "警告：找不到 convert_checkpoint.py。將嘗試假設它在 PATH 中或使用 'convert_checkpoint.py'。"
     echo "若失敗，請將 TensorRT-LLM examples/llama/convert_checkpoint.py 複製到此目錄。"
-    CMD="python3 convert_checkpoint.py"
+    CMD="$PYTHON_CMD convert_checkpoint.py"
 fi
 
-echo "執行轉換指令..."
+echo "執行轉換指令 (使用 $PYTHON_CMD)..."
 $CMD --model_dir $MODEL_DIR \
      --output_dir $CHECKPOINT_DIR \
      --dtype nvfp4 \
@@ -84,6 +105,8 @@ echo "--------------------------------------------------------"
 
 if ! command -v trtllm-build &> /dev/null; then
     echo "錯誤：找不到 trtllm-build 指令。請確保已安裝 TensorRT-LLM 並將其加入 PATH。"
+    # 提醒使用者如果是新安裝的 conda，需要安裝套件
+    echo "提示：若您剛安裝 Miniconda，請記得建立環境並安裝 TensorRT-LLM。"
     exit 1
 fi
 
@@ -96,5 +119,5 @@ trtllm-build --checkpoint_dir $CHECKPOINT_DIR \
 
 echo "--------------------------------------------------------"
 echo "安裝與建置完成！"
-echo "請執行 'python3 chat.py' 開始對話。"
+echo "請執行 '$PYTHON_CMD chat.py' 開始對話。"
 echo "--------------------------------------------------------"
