@@ -77,5 +77,9 @@ max_context_len: 131072
 *   `checkpoint_output/`: 轉換後的 Checkpoint (由腳本產生)
 *   `engine_output/`: 編譯完成的 TensorRT 引擎 (由腳本產生)
 
+## 參考資料
+
+*   [NVIDIA TensorRT-LLM GitHub](https://github.com/NVIDIA/TensorRT-LLM): 官方原始碼與進階文件。
+
 ---
 *由 Llama 3.1 驅動，針對 RTX 50 系列硬體進行最佳化。*

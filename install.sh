@@ -46,6 +46,10 @@ else
     echo "檢測到 conda 環境。"
 fi
 
+# 確保 transformers 版本足夠新以支援 Llama 3.1 模板
+echo "正在檢查並升級 transformers..."
+pip install --upgrade transformers
+
 # 鎖定 Python 執行檔路徑
 PYTHON_CMD=$(which python3)
 
@@ -54,6 +58,7 @@ echo "確認 Python 環境"
 echo "--------------------------------------------------------"
 echo "正在使用的 Python 執行檔路徑: $PYTHON_CMD"
 $PYTHON_CMD --version
+# 更多進階設定可參考 TensorRT-LLM 官方文件: https://github.com/NVIDIA/TensorRT-LLM
 
 # 步驟 1: 下載模型
 echo "--------------------------------------------------------"
