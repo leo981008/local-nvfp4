@@ -1,0 +1,5 @@
+model_id: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+dtype: "nvfp4"
+kv_cache_dtype: "fp8"
+max_context_len: 131072 # Native Llama 3.1 limit
+# 若使用者能接受較慢的速度（PCIe 卸載），可切換至 70B 模型 ID。
