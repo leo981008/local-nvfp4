@@ -79,7 +79,9 @@ max_context_len: 131072
 
 ## 參考資料
 
-*   [NVIDIA TensorRT-LLM GitHub](https://github.com/NVIDIA/TensorRT-LLM): 官方原始碼與進階文件。
+*   [NVIDIA TensorRT-LLM GitHub](https://github.com/NVIDIA/TensorRT-LLM): 官方原始碼。
+*   [TensorRT-LLM 官方文件](https://nvidia.github.io/TensorRT-LLM/index.html): 詳細使用手冊與 API 說明。
+*   [Linux 安裝指南](https://nvidia.github.io/TensorRT-LLM/installation/linux.html#linux): 環境建置與依賴安裝說明。
 
 ---
 *由 Llama 3.1 驅動，針對 RTX 50 系列硬體進行最佳化。*
